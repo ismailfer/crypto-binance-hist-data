@@ -15,6 +15,18 @@ public class CandleCollectServiceTest
     CandleCollectService service;
 
     @Test
+    public void mineDataAndSaveToDB()
+    {
+        LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0);
+        LocalDateTime end = start.plusDays(1).minusNanos(1);
+
+        int numberOfRecords = service.mineData(start, end, Symbol.BTCUSDT, Interval.FIFTEEN_MIN);
+
+        Assertions.assertTrue(numberOfRecords > 0);
+
+    }
+
+    @Test
     public void extractCandles()
     {
         LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0);

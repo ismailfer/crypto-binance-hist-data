@@ -40,10 +40,13 @@ public class CandleCollectService
      * @param end
      * @param symbol
      * @param interval
+     * @return  number of records mined
      */
-    public void mineData(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
+    public int mineData(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
     {
         log.info("Mine data for: {} to: {} for {} with interval: {}", begin, end, symbol, interval);
+
+        int numRecordsMined = 0;
 
         // delete any existing data for this given period from mongodb
         repository.deleteWithinTime(symbol,
@@ -71,7 +74,11 @@ public class CandleCollectService
             List<CandleItem> items = extractCandles(currentBegin, currentEnd, symbol, interval);
 
             if (items.size() > 0)
+            {
                 repository.saveAll(items);
+
+                numRecordsMined += items.size();
+            }
 
             try
             {
@@ -86,6 +93,7 @@ public class CandleCollectService
         }
 
 
+        return numRecordsMined;
     }
 
     public List<CandleItem> extractCandles(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
