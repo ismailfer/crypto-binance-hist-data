@@ -1,5 +1,7 @@
 # crypto-binance-hist-data
 
+![](src/main/resources/static/Binancee.png)
+
 ## Description
 
 - Download historical data of crypto instruments from Binance
@@ -8,4 +10,6 @@
 - Storage in MongoDB
 - Docker compose instances of MongoDB and Mongo Express
 - Postman collections of binance API
+
+
 
