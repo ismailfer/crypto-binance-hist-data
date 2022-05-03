@@ -1,6 +1,6 @@
 # crypto-binance-hist-data
 
-![](src/main/resources/static/Binance-small.png)
+![](src/main/resources/static/binance-small.png)
 
 ## Description
 
