@@ -1,4 +1,4 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,12 +7,13 @@ import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Builder
 @Data
 @Slf4j
-public class CandleItem
+public class Candle
 {
     // MongoDB id
     @Id
@@ -39,11 +40,11 @@ public class CandleItem
     private double ignore;
 
 
-    public static CandleItem fromArray(List<Object> fields, Symbol symbol, Interval interval)
+    public static Candle fromArray(List<Object> fields, Symbol symbol, Interval interval)
     {
         int i = 0;
 
-        CandleItem ci = CandleItem.builder()
+        Candle ci = Candle.builder()
                 .symbol(symbol)
                 .interval(interval)
                 .openTime(Long.parseLong(fields.get(i++).toString()))
@@ -91,9 +92,11 @@ public class CandleItem
 
     public String simpleToString()
     {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
+
         return String.format("%s - %s close: %s volume: %s diff: %s ",
-                openDateTime(),
-                closeDateTime(),
+                openDateTime().format(formatter),
+                closeDateTime().format(formatter),
                 close,
                 volume,
                 differencePercentage());

@@ -1,11 +1,11 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({HistDataConfiguration.class})
+@EnableConfigurationProperties({BinanceConfig.class})
 public class Application
 {
 

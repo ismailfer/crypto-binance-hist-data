@@ -1,11 +1,11 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CandleItemRepository extends MongoRepository<CandleItem, String>
+public interface CandleRepository extends MongoRepository<Candle, String>
 {
     void deleteBySymbolAndInterval(Symbol symbol, Interval interval);
 

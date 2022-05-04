@@ -1,4 +1,4 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HistDataService
+public class BinanceService
 {
-    private final HistDataConfiguration config;
+    private final BinanceConfig config;
 
-    private final CandleItemRepository repository;
+    private final CandleRepository repository;
 
     //private final IndicatorForExistingCandlesService indicatorForExistingCandlesService;
 
@@ -42,7 +42,7 @@ public class HistDataService
      * @param interval
      * @return  number of records mined
      */
-    public int mineData(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
+    public int getHistDataAndSaveToDB(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval, boolean pSaveToDB)
     {
         log.info("Mine data for: {} to: {} for {} with interval: {}", begin, end, symbol, interval);
 
@@ -51,33 +51,39 @@ public class HistDataService
         log.info("open {} epoch millis {}", begin , begin.toInstant(ZoneOffset.UTC).toEpochMilli());
 
         // delete any existing data for this given period from mongodb
-        repository.deleteWithinTime(symbol,
-                interval,
-                begin.toInstant(ZoneOffset.UTC).toEpochMilli(),
-                end.toInstant(ZoneOffset.UTC).toEpochMilli());
+        if (pSaveToDB)
+        {
+            repository.deleteWithinTime(symbol,
+                    interval,
+                    begin.toInstant(ZoneOffset.UTC).toEpochMilli(),
+                    end.toInstant(ZoneOffset.UTC).toEpochMilli());
+        }
 
         // Based on the max chunk size to request from binance; and the period requested;
         // create time bins to download each
 
-        LocalDateTime currentBegin = begin.minusDays(0);
+        LocalDateTime currentBegin = begin.minusMinutes(0);
 
         // TODO should convert this to minutes; instead of days
-        int daysAtATime = Double.valueOf(Math.floor(CHUNK_MAX / interval.chunksPerDay())).intValue();
+        int minutesPerChunk = interval.getMinutes() * CHUNK_MAX;
 
         LocalDateTime currentEnd = null;
 
         while (currentBegin.isBefore(end))
         {
-            currentEnd = currentBegin.plusDays(daysAtATime);
+            currentEnd = currentBegin.plusMinutes(minutesPerChunk);
 
             if (currentEnd.isAfter(end))
-                currentEnd = end.plusDays(0);
+                currentEnd = end.plusMinutes(0);
 
-            List<CandleItem> items = extractCandles(currentBegin, currentEnd, symbol, interval);
+            List<Candle> items = getHistData(currentBegin, currentEnd, symbol, interval);
 
             if (items.size() > 0)
             {
-                repository.saveAll(items);
+                if (pSaveToDB)
+                {
+                    repository.saveAll(items);
+                }
 
                 numRecordsMined += items.size();
             }
@@ -91,14 +97,14 @@ public class HistDataService
                 ie.printStackTrace();
             }
 
-            currentBegin = currentBegin.plusDays(daysAtATime);
+            currentBegin = currentBegin.plusMinutes(minutesPerChunk);
         }
 
 
         return numRecordsMined;
     }
 
-    public List<CandleItem> extractCandles(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
+    public List<Candle> getHistData(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
     {
         log.info("Extract candles: {} to {} symbol {} interval {}", begin, end, symbol, interval);
 
@@ -107,12 +113,12 @@ public class HistDataService
         // Build the URI for RestAPI request
         // Follow Postman request
 
-        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getUrl())
-                .queryParam(config.getUrlQueryStartTime(), begin.toEpochSecond(ZoneOffset.UTC) * 1000)
-                .queryParam(config.getUrlQuerySymbol(), symbol.getCode())
-                .queryParam(config.getUrlQueryInterval(), interval.getCode())
-                .queryParam(config.getUrlQueryLimit(), CHUNK_MAX)
-                .queryParam(config.getUrlQueryEndTime(), end.toEpochSecond(ZoneOffset.UTC) * 1000)
+        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getKlinesUrl())
+                .queryParam(config.getKlinesUrlQueryStartTime(), begin.toEpochSecond(ZoneOffset.UTC) * 1000)
+                .queryParam(config.getKlinesUrlQuerySymbol(), symbol.getCode())
+                .queryParam(config.getKlinesUrlQueryInterval(), interval.getCode())
+                .queryParam(config.getKlinesUrlQueryLimit(), CHUNK_MAX)
+                .queryParam(config.getKlinesUrlQueryEndTime(), end.toEpochSecond(ZoneOffset.UTC) * 1000)
                 .build().toUri();
 
         log.info("Url: {}", url);
@@ -132,8 +138,8 @@ public class HistDataService
             return new ArrayList<>();
         }
 
-        List<CandleItem> collect = response.stream()
-                .map(l -> CandleItem.fromArray(l, symbol, interval))
+        List<Candle> collect = response.stream()
+                .map(l -> Candle.fromArray(l, symbol, interval))
                 .collect(Collectors.toList());
 
         log.info("items extracted: {}", collect.size());

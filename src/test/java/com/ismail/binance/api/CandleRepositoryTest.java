@@ -1,25 +1,22 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
-import com.sun.jdi.IntegerValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @SpringBootTest
-public class CandleItemRepositoryTest
+public class CandleRepositoryTest
 {
     @Autowired
-    private CandleItemRepository repository;
+    private CandleRepository repository;
 
-    private CandleItem createTestData(Symbol symbol, Interval interval)
+    private Candle createTestData(Symbol symbol, Interval interval)
     {
-        CandleItem ci = CandleItem.builder()
+        Candle ci = Candle.builder()
                 .symbol(symbol)
                 .interval(interval)
                 .open(10.0)

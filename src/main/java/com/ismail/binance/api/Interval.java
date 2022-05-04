@@ -1,4 +1,4 @@
-package com.ismail.binance.binancehistdata;
+package com.ismail.binance.api;
 
 import lombok.Getter;
 
