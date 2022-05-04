@@ -102,5 +102,9 @@ public class Candle
                 differencePercentage());
     }
 
-
+    @Override
+    public String toString()
+    {
+        return simpleToString();
+    }
 }

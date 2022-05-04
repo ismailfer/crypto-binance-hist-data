@@ -76,7 +76,12 @@ public class BinanceService
             if (currentEnd.isAfter(end))
                 currentEnd = end.plusMinutes(0);
 
-            List<Candle> items = getHistData(currentBegin, currentEnd, symbol, interval);
+            List<Candle> items = getHistDataSingleChunk(symbol, interval, currentBegin.toEpochSecond(ZoneOffset.UTC) * 1000L , currentEnd.toEpochSecond(ZoneOffset.UTC) * 1000L);
+
+            items.forEach(e -> {
+                System.out.println(e.simpleToString());
+            });
+
 
             if (items.size() > 0)
             {
@@ -104,7 +109,17 @@ public class BinanceService
         return numRecordsMined;
     }
 
-    public List<Candle> getHistData(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval)
+    /**
+     * Request historical data with one chunk (max is 1000 records)
+     * this method should be called from this service only
+     *
+     * @param begin
+     * @param end
+     * @param symbol
+     * @param interval
+     * @return
+     */
+    public List<Candle> getHistDataSingleChunk(Symbol symbol, Interval interval, long begin, long end)
     {
         log.info("Extract candles: {} to {} symbol {} interval {}", begin, end, symbol, interval);
 
@@ -114,11 +129,11 @@ public class BinanceService
         // Follow Postman request
 
         URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getKlinesUrl())
-                .queryParam(config.getKlinesUrlQueryStartTime(), begin.toEpochSecond(ZoneOffset.UTC) * 1000)
+                .queryParam(config.getKlinesUrlQueryStartTime(), begin)
                 .queryParam(config.getKlinesUrlQuerySymbol(), symbol.getCode())
                 .queryParam(config.getKlinesUrlQueryInterval(), interval.getCode())
                 .queryParam(config.getKlinesUrlQueryLimit(), CHUNK_MAX)
-                .queryParam(config.getKlinesUrlQueryEndTime(), end.toEpochSecond(ZoneOffset.UTC) * 1000)
+                .queryParam(config.getKlinesUrlQueryEndTime(), end)
                 .build().toUri();
 
         log.info("Url: {}", url);
