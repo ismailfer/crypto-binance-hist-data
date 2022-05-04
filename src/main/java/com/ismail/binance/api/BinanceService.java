@@ -13,6 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class BinanceService
      * @param interval
      * @return  number of records mined
      */
-    public int getHistDataAndSaveToDB(LocalDateTime begin, LocalDateTime end, Symbol symbol, Interval interval, boolean pSaveToDB)
+    public int getHistDataAndSaveToDB(Symbol symbol, Interval interval, LocalDateTime begin, LocalDateTime end, boolean pSaveToDB)
     {
         log.info("Mine data for: {} to: {} for {} with interval: {}", begin, end, symbol, interval);
 
@@ -62,7 +63,9 @@ public class BinanceService
         // Based on the max chunk size to request from binance; and the period requested;
         // create time bins to download each
 
-        LocalDateTime currentBegin = begin.minusMinutes(0);
+        // always truncate to base timeframe
+        LocalDateTime currentBegin = begin.truncatedTo(ChronoUnit.MINUTES);
+        //LocalDateTime currentBegin = begin.minusMinutes(0);
 
         // TODO should convert this to minutes; instead of days
         int minutesPerChunk = interval.getMinutes() * CHUNK_MAX;
@@ -78,9 +81,8 @@ public class BinanceService
 
             List<Candle> items = getHistDataSingleChunk(symbol, interval, currentBegin.toEpochSecond(ZoneOffset.UTC) * 1000L , currentEnd.toEpochSecond(ZoneOffset.UTC) * 1000L);
 
-            items.forEach(e -> {
-                System.out.println(e.simpleToString());
-            });
+            // print for debugging purposes
+             items.forEach(e -> {System.out.println(e.simpleToString()); });
 
 
             if (items.size() > 0)

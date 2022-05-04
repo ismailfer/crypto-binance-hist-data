@@ -20,10 +20,10 @@ public class BinanceServiceTest
     @Test
     public void getHistDataAndSaveToDB()
     {
-        LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0);
-        LocalDateTime end = start.plusHours(20).minusNanos(1);
+        LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0, 0);
+        LocalDateTime end = start.plusHours(1).minusNanos(1);
 
-        int numberOfRecords = service.getHistDataAndSaveToDB(start, end, Symbol.BTCUSDT, Interval.ONE_MIN, true);
+        int numberOfRecords = service.getHistDataAndSaveToDB(Symbol.BTCUSDT, Interval.ONE_MIN, start, end,true);
 
         System.out.println("getHistDataAndSaveToDB() Records downloaded: " + numberOfRecords);
 
@@ -31,7 +31,7 @@ public class BinanceServiceTest
     }
 
     @Test
-    public void getHistData()
+    public void getHistDataSingleChunk()
     {
         LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0, 0, 0);
         //LocalDateTime end = start.plusHours(1).minusNanos(1);
