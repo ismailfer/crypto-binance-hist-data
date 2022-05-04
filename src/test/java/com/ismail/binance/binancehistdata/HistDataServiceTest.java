@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
-public class CandleCollectServiceTest
+public class HistDataServiceTest
 {
     @Autowired
-    CandleCollectService service;
+    HistDataService service;
 
     @Test
     public void mineDataAndSaveToDB()
@@ -23,7 +23,6 @@ public class CandleCollectServiceTest
         int numberOfRecords = service.mineData(start, end, Symbol.BTCUSDT, Interval.FIFTEEN_MIN);
 
         Assertions.assertTrue(numberOfRecords > 0);
-
     }
 
     @Test

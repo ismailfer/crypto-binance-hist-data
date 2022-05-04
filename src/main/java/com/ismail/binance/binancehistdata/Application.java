@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({CandleCollectConfiguration.class})
+@EnableConfigurationProperties({HistDataConfiguration.class})
 public class Application
 {
 

@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CandleCollectService
+public class HistDataService
 {
-    private final CandleCollectConfiguration config;
+    private final HistDataConfiguration config;
 
     private final CandleItemRepository repository;
 
@@ -105,12 +105,12 @@ public class CandleCollectService
         // Build the URI for RestAPI request
         // Follow Postman request
 
-        URI url = UriComponentsBuilder.fromHttpUrl(config.getCandleUrlPrefix() + config.getCandleUrl())
-                .queryParam(config.getCandleUrlQueryStartTime(), begin.toEpochSecond(ZoneOffset.UTC) * 1000)
-                .queryParam(config.getCandleUrlQuerySymbol(), symbol.getCode())
-                .queryParam(config.getCandleUrlQueryInterval(), interval.getCode())
-                .queryParam(config.getCandleUrlQueryLimit(), CHUNK_MAX)
-                .queryParam(config.getCandleUrlQueryEndTime(), end.toEpochSecond(ZoneOffset.UTC) * 1000)
+        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getUrl())
+                .queryParam(config.getUrlQueryStartTime(), begin.toEpochSecond(ZoneOffset.UTC) * 1000)
+                .queryParam(config.getUrlQuerySymbol(), symbol.getCode())
+                .queryParam(config.getUrlQueryInterval(), interval.getCode())
+                .queryParam(config.getUrlQueryLimit(), CHUNK_MAX)
+                .queryParam(config.getUrlQueryEndTime(), end.toEpochSecond(ZoneOffset.UTC) * 1000)
                 .build().toUri();
 
         log.info("Url: {}", url);
