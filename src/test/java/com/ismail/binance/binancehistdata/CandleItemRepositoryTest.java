@@ -22,14 +22,14 @@ public class CandleItemRepositoryTest
         CandleItem ci = CandleItem.builder()
                 .symbol(symbol)
                 .interval(interval)
-                .open(BigDecimal.TEN)
-                .high(BigDecimal.TEN)
-                .low(BigDecimal.TEN)
-                .close(BigDecimal.TEN)
+                .open(10.0)
+                .high(10.0)
+                .low(10.0)
+                .close(10.0)
                 .openTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000L)
                 .openTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000L + interval.getMinutes() * 60000L)
-                .numberOfTrades(BigInteger.valueOf(20))
-                .ignore(BigDecimal.TEN)
+                .numberOfTrades(20L)
+                .ignore(10.0)
                 .build();
 
         return ci;

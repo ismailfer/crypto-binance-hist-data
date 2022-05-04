@@ -48,6 +48,8 @@ public class HistDataService
 
         int numRecordsMined = 0;
 
+        log.info("open {} epoch millis {}", begin , begin.toInstant(ZoneOffset.UTC).toEpochMilli());
+
         // delete any existing data for this given period from mongodb
         repository.deleteWithinTime(symbol,
                 interval,

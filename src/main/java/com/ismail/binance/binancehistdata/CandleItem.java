@@ -1,16 +1,10 @@
 package com.ismail.binance.binancehistdata;
 
-import com.ismail.binance.binancehistdata.indicator.Constants;
-import com.ismail.binance.binancehistdata.indicator.Indicator;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Id;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -30,28 +24,19 @@ public class CandleItem
 
     // candle data
 
-    private Long openTime;
-    private BigDecimal open;
-    private BigDecimal high;
-    private BigDecimal low;
-    private BigDecimal close;
-    private BigDecimal volume;
-    private Long closeTime;
+    private long openTime;
+    private double open;
+    private double high;
+    private double low;
+    private double close;
+    private double volume;
+    private long closeTime;
 
-    private BigDecimal quoteAssetVolume;
-    private BigInteger numberOfTrades;
-    private BigDecimal takerBuyBaseAssetVolume;
-    private BigDecimal takerBuyQuoteAssetVolume;
-    private BigDecimal ignore;
-
-    private Indicator indicator;
-    private boolean indicatorCalculated;
-
-
-    {
-        indicatorCalculated = false;
-        indicator = Indicator.builder().build();
-    }
+    private double quoteAssetVolume;
+    private long numberOfTrades;
+    private double takerBuyBaseAssetVolume;
+    private double takerBuyQuoteAssetVolume;
+    private double ignore;
 
 
     public static CandleItem fromArray(List<Object> fields, Symbol symbol, Interval interval)
@@ -61,19 +46,18 @@ public class CandleItem
         CandleItem ci = CandleItem.builder()
                 .symbol(symbol)
                 .interval(interval)
-                .openTime((Long) fields.get(i++))
-                .open(new BigDecimal(fields.get(i++).toString()))
-                .high(new BigDecimal(fields.get(i++).toString()))
-                .low(new BigDecimal(fields.get(i++).toString()))
-                .close(new BigDecimal(fields.get(i++).toString()))
-                .volume(new BigDecimal(fields.get(i++).toString()))
-                .closeTime((Long) fields.get(i++))
-                .quoteAssetVolume(new BigDecimal(fields.get(i++).toString()))
-                .numberOfTrades(BigInteger.valueOf(Long.parseLong(fields.get(i++).toString())))
-                .takerBuyBaseAssetVolume(new BigDecimal(fields.get(i++).toString()))
-                .takerBuyQuoteAssetVolume(new BigDecimal(fields.get(i++).toString()))
-                .ignore(new BigDecimal(fields.get(i).toString()))
-                .indicator(Indicator.builder().build())
+                .openTime(Long.parseLong(fields.get(i++).toString()))
+                .open(Double.parseDouble(fields.get(i++).toString()))
+                .high(Double.parseDouble(fields.get(i++).toString()))
+                .low(Double.parseDouble(fields.get(i++).toString()))
+                .close(Double.parseDouble(fields.get(i++).toString()))
+                .volume(Double.parseDouble(fields.get(i++).toString()))
+                .closeTime(Long.parseLong (fields.get(i++).toString()))
+                .quoteAssetVolume(Double.parseDouble(fields.get(i++).toString()))
+                .numberOfTrades(Long.parseLong (fields.get(i++).toString()))
+                .takerBuyBaseAssetVolume(Double.parseDouble(fields.get(i++).toString()))
+                .takerBuyQuoteAssetVolume(Double.parseDouble(fields.get(i++).toString()))
+                .ignore(Double.parseDouble(fields.get(i++).toString()))
                 .build();
 
         return ci;
@@ -95,14 +79,14 @@ public class CandleItem
         return LocalDateTime.ofEpochSecond(closeTime/1000, (int)(closeTime%1000), ZoneOffset.UTC);
     }
 
-    public BigDecimal difference()
+    public double difference()
     {
-        return close.subtract(open);
+        return close - open;
     }
 
-    public BigDecimal differencePercentage()
+    public double differencePercentage()
     {
-        return difference().divide(open, 20, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        return (difference() / open) * 100.0;
     }
 
     public String simpleToString()
