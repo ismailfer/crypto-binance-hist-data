@@ -6,8 +6,13 @@ import lombok.Getter;
 public enum Symbol
 {
     BTCUSDT("BTCUSDT"),
+    BTCBUSD("BTCBUSD"),
 
-    LTCUSDT("LTCUSDT");
+    ETHUSDT("ETHUSDT"),
+    ETHBUSD("ETHBUSD"),
+
+    LTCUSDT("LTCUSDT"),
+    LTCBUSD("LTCBUSD");
 
     private String code;
 

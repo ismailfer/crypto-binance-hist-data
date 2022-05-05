@@ -1,9 +1,13 @@
 package com.ismail.binance.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,7 +33,113 @@ public class BinanceService
 
     //private final IndicatorForExistingCandlesService indicatorForExistingCandlesService;
 
-    private static final int CHUNK_MAX = 1000;
+
+    public ServerPing getServerPing()
+    {
+        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getServerPingUrl())
+                .build().toUri();
+
+        ServerPing ping = ServerPing.builder()
+                .success(false)
+                .sendTime(System.currentTimeMillis())
+                .build();
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<String> resp = restTemplate.getForEntity(url, String.class);
+
+        ping.setResponseTime(System.currentTimeMillis());
+        ping.setSuccess(resp.getStatusCode() == HttpStatus.OK);
+
+        return ping;
+    }
+
+
+    public ServerTime getServerTime()
+    {
+        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getServerTimeUrl())
+                .build().toUri();
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ServerTime serverTime = restTemplate.getForObject(url, ServerTime.class);
+
+        return serverTime;
+    }
+
+
+    public BookTicker getBookTicker(Symbol symbol)
+    {
+        log.info("getBookTicker: {}", symbol);
+
+
+        // Build the URI for RestAPI request
+        // Follow Postman request
+
+        URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getBookTickerUrl())
+                .queryParam(config.getBookTickerQuerySymbol(), symbol.getCode())
+                .build().toUri();
+
+        log.info("getBookTicker Url: {}", url);
+
+        BookTicker bt = null;
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        // ----------------------------------------------------------------------------------------
+        // automatically map response to a POJO
+        // ----------------------------------------------------------------------------------------
+        //bt = restTemplate.getForObject(url, BookTicker.class);
+
+        // ----------------------------------------------------------------------------------------
+        // automatically map response to a POJO
+        // ResponseEntity has headers that might interest us; like status code; error messages etc
+        // ----------------------------------------------------------------------------------------
+        ResponseEntity<BookTicker> response = restTemplate.getForEntity(url, BookTicker.class);
+        bt = response.getBody();
+
+        List<String> mbxUsedWeightList = response.getHeaders().get("X-MBX-USED-WEIGHT");
+        List<String> mbxUsedWeight1mList = response.getHeaders().get("X-MBX-USED-WEIGHT-1m");
+
+        System.out.println("--- X-MBX-USED-WEIGHT: " + mbxUsedWeightList + ", X-MBX-USED-WEIGHT-1m: " + mbxUsedWeight1mList);
+        /*
+        // ----------------------------------------------------------------------------------------
+        // manually parse the response using json reader
+        // ----------------------------------------------------------------------------------------
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+
+        if (response.getStatusCode() == HttpStatus.OK)
+        {
+            log.info("Book ticker: {} ", response.getBody());
+
+            try
+            {
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+
+                bt = BookTicker.builder()
+                        .symbol(Symbol.valueOf(root.get("symbol").asText()))
+                        .bidPrice(root.get("bidPrice").asDouble())
+                        .bidQty(root.get("bidQty").asDouble())
+                        .askPrice(root.get("askPrice").asDouble())
+                        .askQty(root.get("askQty").asDouble())
+                        .build();
+
+
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+         */
+
+
+        return bt;
+    }
 
 
     /**
@@ -41,7 +151,7 @@ public class BinanceService
      * @param end
      * @param symbol
      * @param interval
-     * @return  number of records mined
+     * @return number of records mined
      */
     public int getHistDataAndSaveToDB(Symbol symbol, Interval interval, LocalDateTime begin, LocalDateTime end, boolean pSaveToDB)
     {
@@ -49,7 +159,7 @@ public class BinanceService
 
         int numRecordsMined = 0;
 
-        log.info("open {} epoch millis {}", begin , begin.toInstant(ZoneOffset.UTC).toEpochMilli());
+        log.info("open {} epoch millis {}", begin, begin.toInstant(ZoneOffset.UTC).toEpochMilli());
 
         // delete any existing data for this given period from mongodb
         if (pSaveToDB)
@@ -68,7 +178,7 @@ public class BinanceService
         //LocalDateTime currentBegin = begin.minusMinutes(0);
 
         // TODO should convert this to minutes; instead of days
-        int minutesPerChunk = interval.getMinutes() * CHUNK_MAX;
+        int minutesPerChunk = interval.getMinutes() * config.getChunkMax();
 
         LocalDateTime currentEnd = null;
 
@@ -79,10 +189,12 @@ public class BinanceService
             if (currentEnd.isAfter(end))
                 currentEnd = end.plusMinutes(0);
 
-            List<Candle> items = getHistDataSingleChunk(symbol, interval, currentBegin.toEpochSecond(ZoneOffset.UTC) * 1000L , currentEnd.toEpochSecond(ZoneOffset.UTC) * 1000L);
+            List<Candle> items = getHistDataSingleChunk(symbol, interval, currentBegin.toEpochSecond(ZoneOffset.UTC) * 1000L, currentEnd.toEpochSecond(ZoneOffset.UTC) * 1000L);
 
             // print for debugging purposes
-             items.forEach(e -> {System.out.println(e.simpleToString()); });
+            items.forEach(e -> {
+                System.out.println(e.simpleToString());
+            });
 
 
             if (items.size() > 0)
@@ -131,11 +243,11 @@ public class BinanceService
         // Follow Postman request
 
         URI url = UriComponentsBuilder.fromHttpUrl(config.getUrlPrefix() + config.getKlinesUrl())
-                .queryParam(config.getKlinesUrlQueryStartTime(), begin)
-                .queryParam(config.getKlinesUrlQuerySymbol(), symbol.getCode())
-                .queryParam(config.getKlinesUrlQueryInterval(), interval.getCode())
-                .queryParam(config.getKlinesUrlQueryLimit(), CHUNK_MAX)
-                .queryParam(config.getKlinesUrlQueryEndTime(), end)
+                .queryParam(config.getKlinesQueryStartTime(), begin)
+                .queryParam(config.getKlinesQuerySymbol(), symbol.getCode())
+                .queryParam(config.getKlinesQueryInterval(), interval.getCode())
+                .queryParam(config.getKlinesQueryLimit(), config.getChunkMax())
+                .queryParam(config.getKlinesQueryEndTime(), end)
                 .build().toUri();
 
         log.info("Url: {}", url);
@@ -150,7 +262,8 @@ public class BinanceService
 
         List<List<Object>> response = exchange.getBody();
 
-        if (response == null) {
+        if (response == null)
+        {
             log.warn("No response from service!");
             return new ArrayList<>();
         }

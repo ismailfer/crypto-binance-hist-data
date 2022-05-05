@@ -7,17 +7,38 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("binance")
 public class BinanceConfig
 {
+    private int chunkMax = 1000;
+
+    // Binance base URL
+
     private String urlPrefix;
+
+    // Sever ping
+    private String serverPingUrl;
+
+    // Sever time
+    private String serverTimeUrl;
+
+    // Book Ticker
+
+    private String bookTickerUrl;
+
+    private String bookTickerQuerySymbol;
+
+    // KLines
 
     private String klinesUrl;
 
-    private String klinesUrlQuerySymbol;
+    private String klinesQuerySymbol;
 
-    private String klinesUrlQueryInterval;
+    private String klinesQueryInterval;
 
-    private String klinesUrlQueryStartTime;
+    private String klinesQueryStartTime;
 
-    private String klinesUrlQueryEndTime;
+    private String klinesQueryEndTime;
 
-    private String klinesUrlQueryLimit;
+    private String klinesQueryLimit;
+
+
+
 }

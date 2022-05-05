@@ -3,8 +3,8 @@ services:
   # first container
   mongodb:
     image: mongo:latest
-    container_name: mongodb-binance
-    ports: 
+    container_name: mongodb-binance-test
+    ports:
       - 27017:27017
     volumes:
       - data:/data
@@ -29,8 +29,6 @@ volumes:
   data: {}
 
 # networks to share between mongodb and mongo-express; so they can talk to each other
-networks:  
+networks:
   default:
     name: mongodb_network
-
-  

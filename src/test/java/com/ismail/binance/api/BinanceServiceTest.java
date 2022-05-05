@@ -18,6 +18,33 @@ public class BinanceServiceTest
     private BinanceService service;
 
     @Test
+    public void getServerPing()
+    {
+        ServerPing serverPing1 = service.getServerPing();
+
+        ServerPing serverPing2 = service.getServerPing();
+
+        System.out.println("ServerPing1: " + serverPing1.toString());
+        System.out.println("ServerPing2: " + serverPing2.toString());
+    }
+
+    @Test
+    public void getServerTime()
+    {
+        ServerTime serverTime = service.getServerTime();
+
+        System.out.println("ServerTime: " + serverTime.toString());
+    }
+
+    @Test
+    public void getBookTicker()
+    {
+        BookTicker ticker = service.getBookTicker(Symbol.BTCUSDT);
+
+        System.out.println("BookTicker: " + ticker.toStringSimple());
+    }
+
+    @Test
     public void getHistDataAndSaveToDB()
     {
         LocalDateTime start = LocalDateTime.of(2022, 04, 1, 0, 0, 0);
